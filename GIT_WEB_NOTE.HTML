@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Note</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver"></script>
+</head>
+<body>
+
+<div id="editor"></div>
+
+<button onclick="saveNote()">Save</button>
+<button onclick="loadNote()">Load</button>
+<button onclick="exportToPDF()">Export to PDF</button>
+<button onclick="exportToTXT()">Export to TXT</button>
+<button onclick="exportToDOCX()">Export to DOCX</button>
+
+<script>
+const simplemde = new SimpleMDE({ element: document.getElementById("editor") });
+
+function saveNote() {
+  const content = simplemde.value().trim();
+  const filename = prompt("Enter file name:");
+  if (content !== '' && filename !== null) {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, filename + '.md');
+  }
+}
+
+function loadNote() {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.md';
+  fileInput.addEventListener('change', function() {
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const content = event.target.result;
+      simplemde.value(content);
+    };
+    reader.readAsText(file);
+  });
+  fileInput.click();
+}
+
+function exportToPDF() {
+  const content = simplemde.value();
+  const pdf = new jsPDF();
+  pdf.text(content, 10, 10);
+  pdf.save('note.pdf');
+}
+
+function exportToTXT() {
+  const content = simplemde.value();
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  saveAs(blob, 'note.txt');
+}
+
+function exportToDOCX() {
+  const content = simplemde.value();
+  const doc = new Document();
+  doc.addSection({
+    properties: {},
+    children: [new Paragraph(content)]
+  });
+  Packer.toBlob(doc).then(blob => {
+    saveAs(blob, 'note.docx');
+  });
+}
+</script>
+
+</body>
+</html>
